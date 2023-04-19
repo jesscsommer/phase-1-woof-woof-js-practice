@@ -1,13 +1,19 @@
-fetch('http://localhost:3000/pups')
-.then(res => {
-    if (res.ok) {
-        return res.json()
-    } else {
-        throw res.statusText
-    }})
-.then(allDogs => {
-    allDogs.forEach(dog => {
-        const dogBarName = document.createElement('span')
+const getAllDogs = () => {
+    fetch('http://localhost:3000/pups')
+        .then(res => {
+            if (res.ok) {
+                return res.json()
+            } else {
+                throw res.statusText
+            }})
+        .then(allDogs => {
+            allDogs.forEach(dog => createDog(dog)) 
+        })
+        .catch(error => alert(error))
+}
+
+const createDog = (dog) => {
+    const dogBarName = document.createElement('span')
         dogBarName.innerText = dog.name
         dogBarName.addEventListener('click', (e) => {
             document.querySelector('#dog-info').innerHTML = ""
@@ -32,9 +38,7 @@ fetch('http://localhost:3000/pups')
             document.querySelector('#dog-info').append(doggoTitle, doggoImg, doggoBtn)
         })
         document.querySelector('#dog-bar').append(dogBarName)
-    })
-})
-.catch(error => alert(error))
+}
 
 const toggleGoodDog = (e, dog) =>  {
     if (dog.isGoodDog){
@@ -61,3 +65,27 @@ const toggleGoodDog = (e, dog) =>  {
     })
     .catch(error => alert(error))
 }
+const filterBtn = document.querySelector('#good-dog-filter')
+
+filterBtn.addEventListener('click', e => {
+    if (filterBtn.innerText === 'Filter good dogs: OFF'){
+        filterBtn.innerText = 'Filter good dogs: ON'
+        fetch('http://localhost:3000/pups')
+        .then(res => {
+            if (res.ok) {
+                return res.json()
+            } else {
+                throw res.statusText
+            }})
+        .then(allDogs => {
+            allDogs.filter(dog => dog.isGoodDog === true).forEach(dog => createDog(dog))
+        })
+        .catch(error => alert(error))
+    }
+    else {
+        filterBtn.innerText = 'Filter good dogs: OFF'
+        getAllDogs()
+    }
+})
+  
+getAllDogs()
