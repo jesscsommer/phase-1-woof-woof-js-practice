@@ -33,16 +33,37 @@ const displayDoggo = (pup) => {
     dogInfoDiv.append(pupInfo)
 }
 
+//! Add event listeners 
+document.querySelector('#good-dog-filter').addEventListener('click', e => {
+    if (e.target.innerText.includes('ON')){
+        e.target.innerText = e.target.innerText.replace('ON', 'OFF')
+        document.querySelector('#dog-bar').innerHTML = ""
+        getPups()
+        .then(pups => pups.forEach(pup => addToDogBar(pup)))
+        .catch(error => alert(error))
+    } else {
+        e.target.innerText = e.target.innerText.replace('OFF', 'ON')
+        document.querySelector('#dog-bar').innerHTML = ""
+        getPups()
+        .then(pups => pups.forEach((pup) => {
+            if (pup.isGoodDog){
+                addToDogBar(pup)
+            }
+        }))
+    }
+})
+
+
 //! Fetch data 
 
 const getPups = () => {
-    fetch(baseURL)
+    return fetch(baseURL)
     .then(res => res.json())
-    .then(pups => pups.forEach(pup => addToDogBar(pup)))
-    .catch(error => alert(error))
 }
 
 getPups()
+.then(pups => pups.forEach(pup => addToDogBar(pup)))
+.catch(error => alert(error))
 
 const patchPups = (id, body) => {
     fetch(`${baseURL}/${id}`, {
