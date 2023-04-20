@@ -1,91 +1,59 @@
-const getAllDogs = () => {
-    fetch('http://localhost:3000/pups')
-        .then(res => {
-            if (res.ok) {
-                return res.json()
-            } else {
-                throw res.statusText
-            }})
-        .then(allDogs => {
-            allDogs.forEach(dog => createDog(dog)) 
-        })
-        .catch(error => alert(error))
+
+//! Globals 
+const baseURL = 'http://localhost:3000/pups'
+const dogInfoDiv = document.querySelector('#dog-info')
+
+//! Render on page
+
+const addToDogBar = (pup) => {
+    const newSpan = document.createElement('span')
+    newSpan.innerText = pup.name
+    newSpan.addEventListener('click', e => displayDoggo(pup))
+    document.querySelector('#dog-bar').append(newSpan)
 }
 
-const createDog = (dog) => {
-    const dogBarName = document.createElement('span')
-        dogBarName.innerText = dog.name
-        dogBarName.addEventListener('click', (e) => {
-            document.querySelector('#dog-info').innerHTML = ""
+const displayDoggo = (pup) => {
+    dogInfoDiv.innerHTML = ""
+    const pupInfo = document.createElement('div')
 
-            const doggoTitle = document.createElement('h2')
-            doggoTitle.innerText = dog.name
+    const img = document.createElement('img')
+    img.src = pup.image
+    img.alt = pup.name
 
-            const doggoImg = document.createElement('img')
-            doggoImg.src = dog.image
-            doggoImg.alt = dog.name
+    const name = document.createElement('h2')
+    name.innerText = pup.name
 
-            const doggoBtn = document.createElement('button')
-            if (dog.isGoodDog){
-                doggoBtn.innerText = 'Good Dog!'
-            } else {
-                doggoBtn.innerText = 'Bad Dog!'
-            }
-            doggoBtn.addEventListener('click', (e) => {
-                toggleGoodDog(e, dog)
-            })
+    const btn = document.createElement('button')
+    btn.innerText = pup.isGoodDog ? 'Good Dog!' : 'Bad Dog!'
+    btn.addEventListener('click', e => patchPups(pup.id, {
+        isGoodDog: !pup.isGoodDog
+    }))
 
-            document.querySelector('#dog-info').append(doggoTitle, doggoImg, doggoBtn)
-        })
-        document.querySelector('#dog-bar').append(dogBarName)
+    pupInfo.append(img, name, btn)
+    dogInfoDiv.append(pupInfo)
 }
 
-const toggleGoodDog = (e, dog) =>  {
-    if (dog.isGoodDog){
-        e.target.innerText = 'Bad Dog!'
-    } else {
-        e.target.innerText = 'Good Dog!'
-    }
-    fetch(`http://localhost:3000/pups/${dog.id}`, {
+//! Fetch data 
+
+const getPups = () => {
+    fetch(baseURL)
+    .then(res => res.json())
+    .then(pups => pups.forEach(pup => addToDogBar(pup)))
+    .catch(error => alert(error))
+}
+
+getPups()
+
+const patchPups = (id, body) => {
+    fetch(`${baseURL}/${id}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json'
-        }, 
-        body: JSON.stringify({
-            isGoodDog: !dog.isGoodDog
-        })
+        },
+        body: JSON.stringify(body)
     })
-    .then(res => {
-        if (res.ok) {
-            res.json()
-        } else {
-            throw res.statusText
-        }
-    })
+    .then(res => res.json())
+    .then(pup => displayDoggo(pup))
     .catch(error => alert(error))
 }
-const filterBtn = document.querySelector('#good-dog-filter')
-
-filterBtn.addEventListener('click', e => {
-    if (filterBtn.innerText === 'Filter good dogs: OFF'){
-        filterBtn.innerText = 'Filter good dogs: ON'
-        fetch('http://localhost:3000/pups')
-        .then(res => {
-            if (res.ok) {
-                return res.json()
-            } else {
-                throw res.statusText
-            }})
-        .then(allDogs => {
-            allDogs.filter(dog => dog.isGoodDog === true).forEach(dog => createDog(dog))
-        })
-        .catch(error => alert(error))
-    }
-    else {
-        filterBtn.innerText = 'Filter good dogs: OFF'
-        getAllDogs()
-    }
-})
-  
-getAllDogs()
